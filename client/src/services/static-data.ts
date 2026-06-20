@@ -1,6 +1,6 @@
 import { Injectable, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, tap } from 'rxjs';
+import { map, Observable, tap } from 'rxjs';
 import { IProduct } from '../models/iproduct';
 import { AuthService } from './auth.service';
 
@@ -14,7 +14,8 @@ export class StaticData {
   constructor(private http: HttpClient, private auth: AuthService) {}
 
   loadProducts(): Observable<IProduct[]> {
-    return this.http.get<IProduct[]>(this.apiUrl).pipe(
+    return this.http.get<IProduct[] | { data: IProduct[] }>(this.apiUrl).pipe(
+      map((response) => Array.isArray(response) ? response : response.data),
       tap((products) => this.products.set(products))
     );
   }
@@ -91,3 +92,4 @@ export class StaticData {
     };
   }
 }
+

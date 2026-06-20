@@ -1,15 +1,28 @@
 const Cart = require('../models/Cart');
 const Order = require('../models/Order');
+const Product = require('../models/Product');
 const { validateCart, validateCheckout } = require('../utils/validators');
 
 const populateCart = (query) => query.populate('products.productId');
 
-const getCartTotal = (cart) => cart.products.reduce((total, item) => {
+const removeMissingProducts = async (cart) => {
+    if (!cart) return cart;
+
+    const validProducts = cart.products.filter((item) => item.productId);
+    if (validProducts.length !== cart.products.length) {
+        cart.products = validProducts;
+        await cart.save();
+    }
+
+    return cart;
+};
+
+const getCartTotal = (cart) => cart.products.filter((item) => item.productId).reduce((total, item) => {
     const product = item.productId;
     return total + (product?.price || 0) * item.quantity;
 }, 0);
 
-const buildOrderItems = (cart) => cart.products.map((item) => ({
+const buildOrderItems = (cart) => cart.products.filter((item) => item.productId).map((item) => ({
     product: item.productId._id,
     owner: item.productId.owner,
     title: item.productId.title,
@@ -18,58 +31,36 @@ const buildOrderItems = (cart) => cart.products.map((item) => ({
     quantity: item.quantity,
 }));
 
-const createStripePaymentIntent = async ({ amount, paymentMethodId }) => {
-    if (!process.env.STRIPE_SECRET_KEY) {
-        throw new Error('Stripe is not configured. Add STRIPE_SECRET_KEY to server environment.');
-    }
-    if (!paymentMethodId) {
-        throw new Error('Stripe payment method is required.');
-    }
-
-    const body = new URLSearchParams({
-        amount: String(Math.round(amount * 100)),
-        currency: process.env.STRIPE_CURRENCY || 'usd',
-        payment_method: paymentMethodId,
-        confirm: 'true',
-        automatic_payment_methods: JSON.stringify({ enabled: true, allow_redirects: 'never' }),
-    });
-
-    const response = await fetch('https://api.stripe.com/v1/payment_intents', {
-        method: 'POST',
-        headers: {
-            Authorization: `Bearer ${process.env.STRIPE_SECRET_KEY}`,
-            'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body,
-    });
-
-    const result = await response.json();
-    if (!response.ok || result.status !== 'succeeded') {
-        throw new Error(result?.error?.message || 'Stripe payment failed');
-    }
-
-    return result;
-};
-
 exports.addToCart = async (req, res) => {
     const { error } = validateCart(req.body);
     if (error) return res.status(400).json({ message: error.details[0].message });
 
     try {
         const { productId, quantity } = req.body;
+        const requestedQuantity = quantity || 1;
+        const product = await Product.findById(productId);
+        if (!product) return res.status(404).json({ message: 'Product not found' });
+        if (product.stock < requestedQuantity) return res.status(400).json({ message: 'Not enough product stock' });
+
         const userId = req.user.id;
         let cart = await Cart.findOne({ user: userId, state: 'pending' });
 
         if (cart) {
-            const productIndex = cart.products.findIndex(p => p.productId.toString() === productId);
-            if (productIndex > -1) cart.products[productIndex].quantity += (quantity || 1);
-            else cart.products.push({ productId, quantity: quantity || 1 });
+            const productIndex = cart.products.findIndex(p => p.productId?.toString() === productId);
+            if (productIndex > -1) {
+                const nextQuantity = cart.products[productIndex].quantity + requestedQuantity;
+                if (nextQuantity > product.stock) return res.status(400).json({ message: 'Not enough product stock' });
+                cart.products[productIndex].quantity = nextQuantity;
+            } else {
+                cart.products.push({ productId, quantity: requestedQuantity });
+            }
             cart = await cart.save();
         } else {
-            cart = await Cart.create({ user: userId, products: [{ productId, quantity: quantity || 1 }] });
+            cart = await Cart.create({ user: userId, products: [{ productId, quantity: requestedQuantity }] });
         }
 
         cart = await populateCart(Cart.findById(cart._id));
+        cart = await removeMissingProducts(cart);
         res.status(200).json({ status: 'success', data: cart });
     } catch (error) {
         res.status(400).json({ status: 'fail', message: error.message });
@@ -78,7 +69,8 @@ exports.addToCart = async (req, res) => {
 
 exports.getCart = async (req, res) => {
     try {
-        const cart = await populateCart(Cart.findOne({ user: req.user.id, state: 'pending' }));
+        let cart = await populateCart(Cart.findOne({ user: req.user.id, state: 'pending' }));
+        cart = await removeMissingProducts(cart);
         if (!cart || cart.products.length === 0) return res.status(404).json({ message: 'Cart is empty' });
         res.status(200).json({ status: 'success', data: cart });
     } catch (error) {
@@ -88,8 +80,8 @@ exports.getCart = async (req, res) => {
 
 exports.getCartCount = async (req, res) => {
     try {
-        const cart = await Cart.findOne({ user: req.user.id, state: 'pending' });
-        const count = cart ? cart.products.reduce((total, item) => total + item.quantity, 0) : 0;
+        const cart = await populateCart(Cart.findOne({ user: req.user.id, state: 'pending' }));
+        const count = cart ? cart.products.filter((item) => item.productId).reduce((total, item) => total + item.quantity, 0) : 0;
         res.status(200).json({ status: 'success', data: { count } });
     } catch (error) {
         res.status(400).json({ status: 'fail', message: error.message });
@@ -104,7 +96,8 @@ exports.removeFromCart = async (req, res) => {
             { $pull: { products: { productId: productId } } },
             { new: true }
         ).populate('products.productId');
-        res.status(200).json({ status: 'success', data: cart });
+        const cleanedCart = await removeMissingProducts(cart);
+        res.status(200).json({ status: 'success', data: cleanedCart });
     } catch (error) {
         res.status(400).json({ status: 'fail', message: error.message });
     }
@@ -115,35 +108,26 @@ exports.checkout = async (req, res) => {
     if (error) return res.status(400).json({ message: error.details[0].message });
 
     try {
-        const cart = await populateCart(Cart.findOne({ user: req.user.id, state: 'pending' }));
+        let cart = await populateCart(Cart.findOne({ user: req.user.id, state: 'pending' }));
+        cart = await removeMissingProducts(cart);
         if (!cart || cart.products.length === 0) return res.status(400).json({ message: 'Cart is empty' });
 
         const totalPrice = getCartTotal(cart);
-        let paymentStatus = 'pending';
-        let stripePaymentIntentId;
-
-        if (req.body.paymentMethod === 'stripe') {
-            const paymentIntent = await createStripePaymentIntent({ amount: totalPrice, paymentMethodId: req.body.paymentMethodId });
-            paymentStatus = 'paid';
-            stripePaymentIntentId = paymentIntent.id;
-        }
-
         const order = await Order.create({
             buyer: req.user._id,
             items: buildOrderItems(cart),
             totalPrice,
-            paymentMethod: req.body.paymentMethod,
-            paymentStatus,
-            stripePaymentIntentId,
+            paymentMethod: 'cash_on_delivery',
+            paymentStatus: 'pending',
             status: 'Pending',
             tracking: [{ status: 'Pending', note: 'Order created', changedBy: req.user._id }],
         });
 
-        cart.paymentMethod = req.body.paymentMethod;
-        cart.state = req.body.paymentMethod === 'stripe' ? 'paid' : 'cash_on_delivery';
+        cart.paymentMethod = 'cash_on_delivery';
+        cart.state = 'cash_on_delivery';
         await cart.save();
 
-        res.status(200).json({ status: 'success', message: 'Order placed successfully.', paymentMethod: req.body.paymentMethod, data: order });
+        res.status(200).json({ status: 'success', message: 'Order placed successfully.', paymentMethod: 'cash_on_delivery', data: order });
     } catch (error) {
         res.status(400).json({ status: 'fail', message: error.message });
     }

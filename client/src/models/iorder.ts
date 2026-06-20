@@ -1,7 +1,7 @@
 import { IProduct } from './iproduct';
 
 export type OrderStatus = 'Pending' | 'Confirmed' | 'Processing' | 'Shipped' | 'Delivered' | 'Cancelled';
-export type PaymentMethod = 'stripe' | 'cash_on_delivery';
+export type PaymentMethod = 'cash_on_delivery';
 
 export interface OrderItem {
   product: IProduct;
@@ -30,3 +30,4 @@ export interface IOrder {
   tracking: OrderTracking[];
   createdAt: string;
 }
+

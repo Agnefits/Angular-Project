@@ -1,3 +1,4 @@
+const mongoose = require('mongoose');
 const Product = require('../models/Product');
 const { validateProduct } = require('../utils/validators');
 
@@ -16,6 +17,12 @@ const buildProductPayload = (body) => {
   }
 
   return payload;
+};
+
+const buildProductQuery = (id) => {
+  if (mongoose.Types.ObjectId.isValid(id)) return { _id: id };
+  const numericId = Number(id);
+  return Number.isFinite(numericId) ? { id: numericId } : null;
 };
 
 const getNextProductId = async () => {
@@ -49,7 +56,10 @@ exports.getMyProducts = async (req, res) => {
 
 exports.getProductById = async (req, res) => {
   try {
-    const product = await Product.findOne({ id: Number(req.params.id) });
+    const query = buildProductQuery(req.params.id);
+    if (!query) return res.status(400).json({ message: 'Invalid product id' });
+
+    const product = await Product.findOne(query);
 
     if (!product) {
       return res.status(404).json({ message: 'Product not found' });
@@ -90,7 +100,10 @@ exports.updateProduct = async (req, res) => {
   if (error) return res.status(400).json({ message: error.details[0].message });
 
   try {
-    const product = await Product.findOne({ id: Number(req.params.id) });
+    const query = buildProductQuery(req.params.id);
+    if (!query) return res.status(400).json({ message: 'Invalid product id' });
+
+    const product = await Product.findOne(query);
 
     if (!product) {
       return res.status(404).json({ message: 'Product not found' });
@@ -101,10 +114,10 @@ exports.updateProduct = async (req, res) => {
     }
 
     const payload = buildProductPayload(req.body);
-    payload.id = Number(req.params.id);
+    payload.id = product.id;
     payload.owner = product.owner || req.user._id;
 
-    const updatedProduct = await Product.findOneAndUpdate({ id: Number(req.params.id) }, payload, {
+    const updatedProduct = await Product.findOneAndUpdate(query, payload, {
       new: true,
       runValidators: true,
     });
@@ -117,7 +130,10 @@ exports.updateProduct = async (req, res) => {
 
 exports.deleteProduct = async (req, res) => {
   try {
-    const product = await Product.findOne({ id: Number(req.params.id) });
+    const query = buildProductQuery(req.params.id);
+    if (!query) return res.status(400).json({ message: 'Invalid product id' });
+
+    const product = await Product.findOne(query);
 
     if (!product) {
       return res.status(404).json({ message: 'Product not found' });
@@ -133,3 +149,5 @@ exports.deleteProduct = async (req, res) => {
     res.status(500).json({ message: 'error in deleting product', error: error.message });
   }
 };
+
+

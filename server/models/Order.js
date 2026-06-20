@@ -27,9 +27,8 @@ const orderSchema = new mongoose.Schema(
     buyer: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true, index: true },
     items: [orderItemSchema],
     totalPrice: { type: Number, required: true, min: 0 },
-    paymentMethod: { type: String, enum: ['stripe', 'cash_on_delivery'], required: true },
+    paymentMethod: { type: String, enum: ['cash_on_delivery'], required: true },
     paymentStatus: { type: String, enum: ['pending', 'paid', 'failed'], default: 'pending' },
-    stripePaymentIntentId: { type: String },
     status: {
       type: String,
       enum: ['Pending', 'Confirmed', 'Processing', 'Shipped', 'Delivered', 'Cancelled'],
@@ -42,3 +41,4 @@ const orderSchema = new mongoose.Schema(
 );
 
 module.exports = mongoose.model('Order', orderSchema);
+

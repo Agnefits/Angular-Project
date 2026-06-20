@@ -8,9 +8,10 @@ const cartSchema = new mongoose.Schema({
             quantity: { type: Number, default: 1 }
         }
     ],
-    paymentMethod: { type: String, enum: ['stripe', 'cash_on_delivery'] },
+    paymentMethod: { type: String, enum: ['cash_on_delivery'] },
     state: { type: String, enum: ['pending', 'paid', 'cash_on_delivery'], default: 'pending' }
 }, { timestamps: true });
 
 const Cart = mongoose.model('Cart', cartSchema);
 module.exports = Cart;
+

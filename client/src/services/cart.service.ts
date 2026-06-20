@@ -5,7 +5,7 @@ import { AuthService } from './auth.service';
 import { IProduct } from '../models/iproduct';
 import { IOrder } from '../models/iorder';
 
-export type PaymentMethod = 'stripe' | 'cash_on_delivery';
+export type PaymentMethod = 'cash_on_delivery';
 
 export interface CartProduct {
   productId: IProduct;
@@ -49,8 +49,8 @@ export class CartService {
     }).pipe(tap((response) => this.setCountFromCart(response.data)));
   }
 
-  checkout(paymentMethod: PaymentMethod, paymentMethodId = ''): Observable<{ status: string; message: string; paymentMethod: PaymentMethod; data: IOrder }> {
-    return this.http.post<{ status: string; message: string; paymentMethod: PaymentMethod; data: IOrder }>(`${this.apiUrl}/checkout`, { paymentMethod, paymentMethodId }, {
+  checkout(paymentMethod: PaymentMethod = 'cash_on_delivery'): Observable<{ status: string; message: string; paymentMethod: PaymentMethod; data: IOrder }> {
+    return this.http.post<{ status: string; message: string; paymentMethod: PaymentMethod; data: IOrder }>(`${this.apiUrl}/checkout`, { paymentMethod }, {
       headers: this.auth.getAuthHeaders(),
     }).pipe(tap(() => this.count.set(0)));
   }
@@ -60,6 +60,6 @@ export class CartService {
   }
 
   private setCountFromCart(cart: CartData | null) {
-    this.count.set(cart?.products?.reduce((total, item) => total + item.quantity, 0) || 0);
+    this.count.set(cart?.products?.filter((item) => item.productId)?.reduce((total, item) => total + item.quantity, 0) || 0);
   }
 }
