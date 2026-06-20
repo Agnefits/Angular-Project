@@ -1,0 +1,9 @@
+.cart-thumb {
+  width: 84px;
+  height: 84px;
+  flex: 0 0 84px;
+}
+
+.summary-card {
+  border-radius: 8px;
+}

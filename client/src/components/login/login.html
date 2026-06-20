@@ -1,18 +1,36 @@
-<form (ngSubmit)="submit()" [formGroup]="loginForm" class="container mt-5">
-  <div class="mb-3 alert alert-info text-center">
-    <h1>Login</h1>
-  </div>
-  <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
+<section class="auth-page d-flex align-items-center py-5">
+  <a class="btn btn-light btn-back shadow-sm" routerLink="/" aria-label="Back to Home">&larr;</a>
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-12 col-sm-10 col-md-7 col-lg-5">
+        <form (ngSubmit)="submit()" [formGroup]="loginForm" class="card border-0 shadow-lg auth-card">
+          <div class="card-body p-4 p-md-5">
+            <div class="text-center mb-4">
+              <p class="text-primary fw-semibold mb-1">Welcome back</p>
+              <h1 class="h3 fw-bold mb-0">Login</h1>
+            </div>
 
-  <div class="mb-3">
-    <label class="form-label">Username</label>
-    <input type="text" class="form-control" formControlName="username">
-  </div>
+            <div *ngIf="infoMessage" class="alert alert-info">{{ infoMessage }}</div>
+            <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
 
-  <div class="mb-3">
-    <label class="form-label">Password</label>
-    <input type="password" class="form-control" formControlName="password">
-  </div>
+            <div class="mb-3">
+              <label class="form-label">Username</label>
+              <input type="text" class="form-control form-control-lg" formControlName="username" autocomplete="username">
+            </div>
 
-  <button class="btn btn-primary" [disabled]="loginForm.invalid">Login</button>
-</form>
+            <div class="mb-4">
+              <label class="form-label">Password</label>
+              <input type="password" class="form-control form-control-lg" formControlName="password" autocomplete="current-password">
+            </div>
+
+            <button class="btn btn-primary btn-lg w-100" [disabled]="loginForm.invalid">Login</button>
+            <div class="text-center mt-4">
+              <span class="text-secondary">New here?</span>
+              <a class="btn btn-link fw-semibold text-decoration-none" routerLink="/signup">Create an account</a>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>

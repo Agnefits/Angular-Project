@@ -9,19 +9,30 @@ import { Singup } from '../components/singup/singup';
 import { Login } from '../components/login/login';
 import { AuthGuard } from '../guards/auth.guard';
 import { AdminGuard } from '../guards/admin.guard';
+import { Cart } from '../components/cart/cart';
+import { Dashboard } from '../components/dashboard/dashboard';
+import { Favorites } from '../components/favorites/favorites';
+import { Orders } from '../components/orders/orders';
+import { OrderDetail } from '../components/order-detail/order-detail';
+import { AdminDashboard } from '../components/admin-dashboard/admin-dashboard';
 
 export const routes: Routes = [
-  { path: '', redirectTo: 'signup', pathMatch: 'full' },
+  { path: '', component: Home },
   {
     path: 'app',
     component: Mainlayout,
-    canActivateChild: [AuthGuard],
     children: [
       { path: '', component: Home },
-      { path: 'add', component: Add },
-      { path: 'add/:id', component: Add, canActivate: [AdminGuard] },
+      { path: 'add', component: Add, canActivate: [AuthGuard] },
+      { path: 'add/:id', component: Add, canActivate: [AuthGuard] },
       { path: 'products', component: Products },
       { path: 'products/:id', component: DetailProduct },
+      { path: 'favorites', component: Favorites, canActivate: [AuthGuard] },
+      { path: 'cart', component: Cart, canActivate: [AuthGuard] },
+      { path: 'orders', component: Orders, canActivate: [AuthGuard] },
+      { path: 'orders/:id', component: OrderDetail, canActivate: [AuthGuard] },
+      { path: 'dashboard', component: Dashboard, canActivate: [AuthGuard] },
+      { path: 'admin', component: AdminDashboard, canActivate: [AdminGuard] },
     ],
   },
   { path: 'signup', component: Singup },

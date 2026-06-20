@@ -30,7 +30,7 @@ export class Add implements OnInit {
           this.newPro = pro;
         },
         error: () => {
-          this.router.navigate(['/app/products']);
+          this.router.navigate(['/app/dashboard']);
         },
       });
     }
@@ -43,7 +43,7 @@ export class Add implements OnInit {
 
     request.subscribe({
       next: () => {
-        this.router.navigate(['/app/products']);
+        this.router.navigate(['/app/dashboard']);
       },
       error: (err) => {
         this.error = err?.error?.message || 'Failed to save product';

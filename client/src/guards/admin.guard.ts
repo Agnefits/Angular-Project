@@ -8,7 +8,7 @@ export class AdminGuard implements CanActivate {
 
   canActivate(): boolean | UrlTree {
     if (!this.auth.isLoggedIn()) {
-      return this.router.createUrlTree(['/signup'], {
+      return this.router.createUrlTree(['/login'], {
         queryParams: { msg: 'You must log in first' },
       });
     }

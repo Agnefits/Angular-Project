@@ -1,14 +1,14 @@
-import { JsonPipe, CommonModule } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { passwordMatched } from '../../validation/passwordMatch';
 import { HttpClient, HttpClientModule } from '@angular/common/http';
-import { Router, ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-singup',
   standalone: true,
-  imports: [ReactiveFormsModule, CommonModule, HttpClientModule],
+  imports: [ReactiveFormsModule, CommonModule, HttpClientModule, RouterLink],
   templateUrl: './singup.html',
   styleUrl: './singup.css',
 })
@@ -32,6 +32,8 @@ export class Singup {
       },
       { validators: [passwordMatched()] }
     );
+
+    this.infoMessage = this.route.snapshot.queryParamMap.get('msg') || '';
   }
 
   get username() {
@@ -67,10 +69,5 @@ export class Singup {
         this.error = err?.error?.message || 'Failed to register user';
       },
     });
-  }
-
-  ngOnInit() {
-    const msg = this.route.snapshot.queryParamMap.get('msg');
-    if (msg) this.infoMessage = msg;
   }
 }

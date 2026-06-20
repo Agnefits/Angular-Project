@@ -1,0 +1,3 @@
+.dashboard-sidebar { position: sticky; top: 76px; border-radius: 8px; }
+.dashboard-table, .card { border-radius: 8px; }
+.product-thumb { width: 56px; height: 56px; flex: 0 0 56px; }

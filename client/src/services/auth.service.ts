@@ -35,7 +35,7 @@ export class AuthService {
     this._role.set(null);
     localStorage.removeItem(this.tokenKey);
     localStorage.removeItem(this.roleKey);
-    this.router.navigate(['/signup']);
+    this.router.navigate(['/']);
   }
 
   getToken() {

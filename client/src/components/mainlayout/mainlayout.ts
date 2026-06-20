@@ -1,11 +1,10 @@
 import { Component } from '@angular/core';
-import { NavBar } from '../nav-bar/nav-bar';
 import { RouterOutlet } from '@angular/router';
 
 @Component({
   selector: 'app-mainlayout',
   standalone: true,
-  imports: [NavBar,RouterOutlet],
+  imports: [RouterOutlet],
   templateUrl: './mainlayout.html',
   styleUrl: './mainlayout.css',
 })

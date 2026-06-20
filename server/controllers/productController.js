@@ -23,12 +23,27 @@ const getNextProductId = async () => {
   return lastProduct ? lastProduct.id + 1 : 1;
 };
 
+const canManageProduct = (product, user) => {
+  if (!product || !user) return false;
+  if (user.role === 'admin') return true;
+  return product.owner && product.owner.toString() === user._id.toString();
+};
+
 exports.getAllProducts = async (req, res) => {
   try {
     const products = await Product.find().sort({ id: 1 });
     res.status(200).json(products);
   } catch (error) {
     res.status(500).json({ message: 'error in fetching products', error: error.message });
+  }
+};
+
+exports.getMyProducts = async (req, res) => {
+  try {
+    const products = await Product.find({ owner: req.user._id }).sort({ id: 1 });
+    res.status(200).json(products);
+  } catch (error) {
+    res.status(500).json({ message: 'error in fetching your products', error: error.message });
   }
 };
 
@@ -52,6 +67,7 @@ exports.createProduct = async (req, res) => {
 
   try {
     const payload = buildProductPayload(req.body);
+    payload.owner = req.user._id;
 
     if (!payload.id) {
       payload.id = await getNextProductId();
@@ -74,17 +90,24 @@ exports.updateProduct = async (req, res) => {
   if (error) return res.status(400).json({ message: error.details[0].message });
 
   try {
+    const product = await Product.findOne({ id: Number(req.params.id) });
+
+    if (!product) {
+      return res.status(404).json({ message: 'Product not found' });
+    }
+
+    if (!canManageProduct(product, req.user)) {
+      return res.status(403).json({ message: 'You can only update your own products' });
+    }
+
     const payload = buildProductPayload(req.body);
     payload.id = Number(req.params.id);
+    payload.owner = product.owner || req.user._id;
 
     const updatedProduct = await Product.findOneAndUpdate({ id: Number(req.params.id) }, payload, {
       new: true,
       runValidators: true,
     });
-
-    if (!updatedProduct) {
-      return res.status(404).json({ message: 'Product not found' });
-    }
 
     res.status(200).json(updatedProduct);
   } catch (error) {
@@ -94,12 +117,17 @@ exports.updateProduct = async (req, res) => {
 
 exports.deleteProduct = async (req, res) => {
   try {
-    const deletedProduct = await Product.findOneAndDelete({ id: Number(req.params.id) });
+    const product = await Product.findOne({ id: Number(req.params.id) });
 
-    if (!deletedProduct) {
+    if (!product) {
       return res.status(404).json({ message: 'Product not found' });
     }
 
+    if (!canManageProduct(product, req.user)) {
+      return res.status(403).json({ message: 'You can only delete your own products' });
+    }
+
+    await Product.deleteOne({ _id: product._id });
     res.status(200).json({ message: 'Product deleted successfully' });
   } catch (error) {
     res.status(500).json({ message: 'error in deleting product', error: error.message });

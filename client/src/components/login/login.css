@@ -1,0 +1,21 @@
+.auth-page {
+  min-height: calc(100vh - 57px);
+  background: linear-gradient(135deg, #eaf8ff 0%, #ffffff 48%, #9fddff 100%);
+  position: relative;
+}
+
+.auth-card {
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.94);
+}
+
+.btn-back {
+  position: absolute;
+  left: 1rem;
+  top: 1rem;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  font-size: 1.4rem;
+  line-height: 1;
+}

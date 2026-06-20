@@ -1,4 +1,5 @@
 export interface IProduct {
+  _id?: string;
   id?: number;
   title: string;
   description: string;
@@ -6,4 +7,5 @@ export interface IProduct {
   thumbnail: string;
   stock: number;
   category: string;
+  owner?: string;
 }

@@ -1,0 +1,18 @@
+<div class="container py-4">
+  <h1 class="h3 fw-bold mb-4">Admin Dashboard</h1>
+  <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
+  <div class="row g-3 mb-4">
+    <div class="col-md-6"><div class="card border-0 shadow-sm"><div class="card-body"><p class="text-secondary mb-1">Users</p><strong class="fs-2">{{ users.length }}</strong></div></div></div>
+    <div class="col-md-6"><div class="card border-0 shadow-sm"><div class="card-body"><p class="text-secondary mb-1">Products</p><strong class="fs-2">{{ products.length }}</strong></div></div></div>
+  </div>
+
+  <ul class="nav nav-tabs"><li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#usersTab" type="button">Users</button></li><li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#productsTab" type="button">Products</button></li></ul>
+  <div class="tab-content border border-top-0 p-3 bg-white">
+    <div class="tab-pane fade show active" id="usersTab">
+      <div class="table-responsive"><table class="table align-middle"><thead><tr><th>User</th><th>Role</th><th>Address</th><th></th></tr></thead><tbody><tr *ngFor="let user of users"><td>{{ user.username }}</td><td><span class="badge text-bg-primary">{{ user.role }}</span></td><td>{{ user.address?.city }} {{ user.address?.street }}</td><td class="text-end"><button class="btn btn-outline-danger btn-sm" type="button" (click)="deleteUser(user._id)">Delete</button></td></tr></tbody></table></div>
+    </div>
+    <div class="tab-pane fade" id="productsTab">
+      <div class="table-responsive"><table class="table align-middle"><thead><tr><th>Product</th><th>Category</th><th>Price</th><th></th></tr></thead><tbody><tr *ngFor="let product of products"><td>{{ product.title }}</td><td>{{ product.category }}</td><td>{{ product.price | currency:'USD':'symbol':'1.2-2' }}</td><td class="text-end"><button class="btn btn-outline-danger btn-sm" type="button" (click)="deleteProduct(product.id)">Delete</button></td></tr></tbody></table></div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,28 @@
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-center gap-3 mb-4">
+    <div>
+      <h1 class="h3 fw-bold mb-1">Favorites</h1>
+      <p class="text-secondary mb-0">Your saved products.</p>
+    </div>
+    <a class="btn btn-outline-primary" routerLink="/app/products">Browse products</a>
+  </div>
+  <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
+  <div *ngIf="loading" class="alert alert-info">Loading favorites...</div>
+  <div *ngIf="!loading && !favorites.favorites().length" class="alert alert-light border text-center py-5">No favorites yet.</div>
+  <div class="row g-3" *ngIf="favorites.favorites().length">
+    <div class="col-sm-6 col-lg-3" *ngFor="let product of favorites.favorites()">
+      <div class="card h-100 shadow-sm border-0 favorite-card">
+        <img [src]="product.thumbnail" [alt]="product.title" class="card-img-top favorite-img">
+        <div class="card-body d-flex flex-column">
+          <h2 class="h6">{{ product.title }}</h2>
+          <p class="text-secondary small flex-grow-1">{{ product.description }}</p>
+          <p class="fw-bold">{{ product.price | currency:'USD':'symbol':'1.2-2' }}</p>
+          <div class="d-flex gap-2">
+            <a class="btn btn-primary btn-sm flex-fill" [routerLink]="['/app/products', product.id]">Details</a>
+            <button class="btn btn-outline-danger btn-sm" type="button" (click)="remove(product._id)">Heart</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

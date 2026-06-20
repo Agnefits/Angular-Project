@@ -4,10 +4,12 @@ import { NgClass, NgIf, SlicePipe } from '@angular/common';
 import { Dark } from '../../Directive/dark';
 import { Zoom } from '../../Directive/zoom';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { Child } from '../child/child';
 import { StaticData } from './../../services/static-data';
 import { AuthService } from '../../services/auth.service';
+import { CartService } from '../../services/cart.service';
+import { FavoriteService } from '../../services/favorite.service';
 
 @Component({
   selector: 'app-products',
@@ -27,15 +29,16 @@ export class Products implements OnInit {
   accending: boolean = false;
   decending: boolean = false;
   SelectedCategory: string = 'All';
+  message = '';
+  error = '';
 
-  constructor(private staticData: StaticData, private auth: AuthService) {}
-
-  get isAdmin() {
-    return this.auth.isAdmin;
-  }
+  constructor(private staticData: StaticData, public auth: AuthService, private cartService: CartService, private router: Router, public favorites: FavoriteService) {}
 
   ngOnInit() {
     this.refreshProducts();
+    if (this.auth.isLoggedIn()) {
+      this.favorites.loadFavorites().subscribe({ error: () => this.favorites.clear() });
+    }
   }
 
   refreshProducts() {
@@ -56,11 +59,7 @@ export class Products implements OnInit {
   toggle() {
     const v = !this.ActiveDark();
     this.ActiveDark.set(v);
-    if (v) {
-      document.body.style.backgroundColor = 'rgb(32, 32, 32)';
-    } else {
-      document.body.style.backgroundColor = 'rgb(255, 255, 255)';
-    }
+    document.body.style.backgroundColor = v ? 'rgb(32, 32, 32)' : 'rgb(255, 255, 255)';
   }
 
   seeMore(number: number = 0) {
@@ -80,22 +79,40 @@ export class Products implements OnInit {
     }
   }
 
-  Total(count: any, price: number, number: number) {
-    const selectedCount = Math.max(0, Number(count) || 0);
+  addToCart(number: number) {
+    if (!this.auth.isLoggedIn()) {
+      this.router.navigate(['/login'], { queryParams: { msg: 'Please log in to add products to your cart' } });
+      return;
+    }
+
     const current = this.Filterlist()[number];
-    if (!current || selectedCount === 0) return;
+    const quantity = Math.max(1, Number(this.wantedAmount[number]) || 1);
+    if (!current?._id) return;
 
-    const purchaseAmount = Math.min(selectedCount, current.stock);
-    this.totalPrice += purchaseAmount * price;
+    this.cartService.addToCart(current._id, quantity).subscribe({
+      next: () => {
+        this.message = `${current.title} added to cart`;
+        this.error = '';
+        this.wantedAmount[number] = 0;
+      },
+      error: (err) => {
+        this.error = err?.error?.message || 'Failed to add product to cart';
+        this.message = '';
+      },
+    });
+  }
 
-    const updated = { ...current, stock: current.stock - purchaseAmount };
-    const filteredList = [...this.Filterlist()];
-    filteredList[number] = updated;
-    this.Filterlist.set(filteredList);
-
-    const allProducts = this.prdList().map((item) => (item.id === updated.id ? updated : item));
-    this.prdList.set(allProducts);
-    this.wantedAmount[number] = 0;
+  toggleFavorite(productId?: string) {
+    if (!this.auth.isLoggedIn()) {
+      this.router.navigate(['/login'], { queryParams: { msg: 'Please log in to save favorites' } });
+      return;
+    }
+    if (!productId) return;
+    this.favorites.toggle(productId).subscribe({
+      error: (err) => {
+        this.error = err?.error?.message || 'Failed to update favorites';
+      },
+    });
   }
 
   deletePro(id: number) {
@@ -108,7 +125,7 @@ export class Products implements OnInit {
     const filtered = this.staticData.getFillteredPro(this.SelectedCategory, this.accending, this.decending);
     this.Filterlist.set(filtered);
     this.extend = new Array(filtered.length).fill(false);
-    this.wantedAmount = new Array(filtered.length).fill(0);
+    this.wantedAmount = new Array(filtered.length).fill(1);
   }
 
   accendingChecked() {
@@ -123,3 +140,4 @@ export class Products implements OnInit {
     this.filteration();
   }
 }
+

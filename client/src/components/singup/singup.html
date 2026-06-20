@@ -1,31 +1,53 @@
-<form (ngSubmit)="submit()" [formGroup]="userRegister" class="container mt-5">
-  <div class="mb-3 alert alert-info text-center">
-    <h1>Sign Up</h1>
-  </div>
-  <div *ngIf="infoMessage" class="alert alert-warning">{{ infoMessage }}</div>
-  <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
+<section class="auth-page d-flex align-items-center py-5">
+  <a class="btn btn-light btn-back shadow-sm" routerLink="/" aria-label="Back to Home">&larr;</a>
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-12 col-sm-11 col-md-8 col-lg-6">
+        <form (ngSubmit)="submit()" [formGroup]="userRegister" class="card border-0 shadow-lg auth-card">
+          <div class="card-body p-4 p-md-5">
+            <div class="text-center mb-4">
+              <p class="text-primary fw-semibold mb-1">Start shopping</p>
+              <h1 class="h3 fw-bold mb-0">Create account</h1>
+            </div>
 
-  <div class="mb-3">
-    <label class="form-label">Username</label>
-    <input type="text" class="form-control" formControlName="username">
-  </div>
+            <div *ngIf="infoMessage" class="alert alert-warning">{{ infoMessage }}</div>
+            <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
 
-  <div formGroupName="address" class="mb-3">
-    <label class="form-label">City</label>
-    <input type="text" class="form-control mb-2" formControlName="city">
-    <label class="form-label">Street</label>
-    <input type="text" class="form-control" formControlName="street">
-  </div>
+            <div class="mb-3">
+              <label class="form-label">Username</label>
+              <input type="text" class="form-control form-control-lg" formControlName="username" autocomplete="username">
+            </div>
 
-  <div class="mb-3">
-    <label class="form-label">Password</label>
-    <input type="password" class="form-control" formControlName="password">
-  </div>
+            <div formGroupName="address" class="row g-3 mb-3">
+              <div class="col-md-6">
+                <label class="form-label">City</label>
+                <input type="text" class="form-control form-control-lg" formControlName="city">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Street</label>
+                <input type="text" class="form-control form-control-lg" formControlName="street">
+              </div>
+            </div>
 
-  <div class="mb-3">
-    <label class="form-label">Confirm Password</label>
-    <input type="password" class="form-control" formControlName="confirmedPassword">
-  </div>
+            <div class="row g-3 mb-4">
+              <div class="col-md-6">
+                <label class="form-label">Password</label>
+                <input type="password" class="form-control form-control-lg" formControlName="password" autocomplete="new-password">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Confirm Password</label>
+                <input type="password" class="form-control form-control-lg" formControlName="confirmedPassword" autocomplete="new-password">
+              </div>
+            </div>
 
-  <button class="btn btn-primary" [disabled]="userRegister.invalid || loading">Create account</button>
-</form>
+            <button class="btn btn-primary btn-lg w-100" [disabled]="userRegister.invalid || loading">Create account</button>
+            <div class="text-center mt-4">
+              <span class="text-secondary">Already registered?</span>
+              <a class="btn btn-link fw-semibold text-decoration-none" routerLink="/login">Login</a>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>

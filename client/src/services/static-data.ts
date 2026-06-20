@@ -19,6 +19,12 @@ export class StaticData {
     );
   }
 
+  loadMyProducts(): Observable<IProduct[]> {
+    return this.http.get<IProduct[]>(`${this.apiUrl}/mine`, {
+      headers: this.auth.getAuthHeaders(),
+    });
+  }
+
   getAllPro(): IProduct[] {
     return this.products();
   }

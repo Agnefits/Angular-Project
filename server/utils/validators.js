@@ -42,8 +42,18 @@ const validateCart = (data) => {
   return schema.validate(data);
 };
 
+const validateCheckout = (data) => {
+  const schema = Joi.object({
+    paymentMethod: Joi.string().valid('stripe', 'cash_on_delivery').required(),
+    paymentMethodId: Joi.string().allow('', null),
+  });
+
+  return schema.validate(data);
+};
+
 module.exports = {
   validateUser,
   validateProduct,
   validateCart,
+  validateCheckout,
 };

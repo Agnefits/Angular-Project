@@ -1,12 +1,26 @@
-<div class="container">
-    <div class="row">
-        <div class="card mt-3">
-            <div class="card-body">
-                <h5 class="card-title">{{pro?.title}}</h5>
-                <p class="card-text">{{pro?.description}}</p>
-                <p class="card-text"><small class="text-body-secondary">{{pro?.price}}$</small></p>
-                <img src={{pro?.thumbnail}} class="card-img-top " style="width: 300px; height: 300px; object-fit: cover;" alt="...">
-            </div>
-</div>
+<div class="container py-4">
+  <div *ngIf="message" class="alert alert-success">{{ message }}</div>
+  <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
+
+  <div *ngIf="pro; else missing" class="card mt-3 border-0 shadow-sm">
+    <div class="row g-0">
+      <div class="col-md-5">
+        <img src={{pro.thumbnail}} class="img-fluid rounded-start detail-img" alt="...">
+      </div>
+      <div class="col-md-7">
+        <div class="card-body p-4">
+          <p class="text-primary fw-semibold text-capitalize mb-1">{{pro.category}}</p>
+          <h1 class="h3 card-title">{{pro.title}}</h1>
+          <p class="card-text text-secondary">{{pro.description}}</p>
+          <p class="card-text fs-4 fw-bold">{{pro.price}}$</p>
+          <p class="card-text" [class.text-danger]="pro.stock === 0">{{pro.stock}} in stock</p>
+          <button class="btn btn-success btn-lg" type="button" [disabled]="pro.stock === 0" (click)="addToCart()">Buy Product</button>
+        </div>
+      </div>
     </div>
+  </div>
+
+  <ng-template #missing>
+    <div class="alert alert-warning mt-3">Product not found.</div>
+  </ng-template>
 </div>
