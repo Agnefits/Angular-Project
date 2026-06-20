@@ -1,0 +1,34 @@
+<form (ngSubmit)="handleSubmit()" class="container mt-5" #form="ngForm">
+  <div class="mb-3 alert alert-info text-center">
+    <h1>{{ id ? 'Edit' : 'Add' }} Product</h1>
+  </div>
+  <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
+  <div class="mb-3">
+    <label for="id" class="form-label">Product ID</label>
+    <input type="number" class="form-control" id="id" placeholder="Leave blank for auto id" [(ngModel)]="newPro.id" name="id" [readonly]="!!id" min="1">
+    <label for="title" class="form-label">Product Title</label>
+    <input type="text" class="form-control" id="title" placeholder="Enter product title" [(ngModel)]="newPro.title" name="title" required pattern="^[a-zA-Z ]+$" #inpName="ngModel">
+    <div [hidden]="inpName.valid || inpName.untouched">
+      <p class="alert alert-danger" [hidden]="!inpName?.errors?.['required']">Product NAME is required</p>
+      <p class="alert alert-danger" [hidden]="!inpName?.errors?.['pattern']">Product NAME should be letter only, you enterd {{newPro.title}}</p>
+    </div>
+    <label for="stock" class="form-label">Product in stock</label>
+    <input type="number" class="form-control" id="stock" placeholder="Enter product stock" [(ngModel)]="newPro.stock" name="stock" required min="0">
+    <label for="price" class="form-label">Product Price</label>
+    <input type="number" class="form-control" id="price" placeholder="Enter product price" [(ngModel)]="newPro.price" name="price" required min="0" step="0.1">
+    <label for="category" class="form-label">Product Category</label>
+    <select class="form-control" id="category" [(ngModel)]="newPro.category" name="category" required>
+      <option selected value="">Select a category</option>
+      <option value="fragrances">fragrances</option>
+      <option value="furniture">furniture</option>
+      <option value="groceries">groceries</option>
+      <option value="beauty">beauty</option>
+    </select>
+    <label for="description" class="form-label">Product Description</label>
+    <input class="form-control" id="description" placeholder="Enter product description" [(ngModel)]="newPro.description" name="description" required rows="3" />
+    <label for="thumbnail" class="form-label">Product Image</label>
+    <input class="form-control" id="thumbnail" placeholder="Enter product image URL" [(ngModel)]="newPro.thumbnail" name="thumbnail" required>
+  </div>
+
+  <button class="btn btn-primary px-4" [disabled]="form.invalid">{{ id ? 'Update' : 'Add' }} Product</button>
+</form>

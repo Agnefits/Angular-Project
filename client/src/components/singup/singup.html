@@ -1,0 +1,31 @@
+<form (ngSubmit)="submit()" [formGroup]="userRegister" class="container mt-5">
+  <div class="mb-3 alert alert-info text-center">
+    <h1>Sign Up</h1>
+  </div>
+  <div *ngIf="infoMessage" class="alert alert-warning">{{ infoMessage }}</div>
+  <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
+
+  <div class="mb-3">
+    <label class="form-label">Username</label>
+    <input type="text" class="form-control" formControlName="username">
+  </div>
+
+  <div formGroupName="address" class="mb-3">
+    <label class="form-label">City</label>
+    <input type="text" class="form-control mb-2" formControlName="city">
+    <label class="form-label">Street</label>
+    <input type="text" class="form-control" formControlName="street">
+  </div>
+
+  <div class="mb-3">
+    <label class="form-label">Password</label>
+    <input type="password" class="form-control" formControlName="password">
+  </div>
+
+  <div class="mb-3">
+    <label class="form-label">Confirm Password</label>
+    <input type="password" class="form-control" formControlName="confirmedPassword">
+  </div>
+
+  <button class="btn btn-primary" [disabled]="userRegister.invalid || loading">Create account</button>
+</form>

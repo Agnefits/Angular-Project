@@ -1,0 +1,18 @@
+<form (ngSubmit)="submit()" [formGroup]="loginForm" class="container mt-5">
+  <div class="mb-3 alert alert-info text-center">
+    <h1>Login</h1>
+  </div>
+  <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
+
+  <div class="mb-3">
+    <label class="form-label">Username</label>
+    <input type="text" class="form-control" formControlName="username">
+  </div>
+
+  <div class="mb-3">
+    <label class="form-label">Password</label>
+    <input type="password" class="form-control" formControlName="password">
+  </div>
+
+  <button class="btn btn-primary" [disabled]="loginForm.invalid">Login</button>
+</form>

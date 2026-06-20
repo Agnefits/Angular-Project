@@ -1,0 +1,62 @@
+<nav class="navbar mb-4" [appDark]="ActiveDark()">
+  <form class="container-fluid justify-content-start">
+    <button class="btn me-2" type="button" [ngClass]="{'btn-outline-dark':ActiveDark()===false,'btn-outline-info':ActiveDark()===true}" (click)="toggle()">{{ActiveDark()===false?"Dark Mode":"Light Mode"}}</button>
+  </form>
+</nav>
+<div class="form-floating">
+  <select class="form-select" id="floatingSelect" [(ngModel)]="SelectedCategory" (change)="filteration()">
+    <option selected value="All">Select a category</option>
+    <option value="fragrances">fragrances</option>
+    <option value="furniture">furniture</option>
+    <option value="groceries">groceries</option>
+    <option value="beauty">beauty</option>
+  </select>
+  <hr>
+  <label for="floatingSelect">Filter by Category</label>
+</div>
+<input type="radio" name="sort" class="btn-check" id="asc" (change)="accendingChecked()">
+<label class="btn btn-outline-primary" for="asc">Ascending</label>
+<input type="radio" name="sort" class="btn-check" id="desc" (change)="decendingChecked()">
+<label class="btn btn-outline-primary" for="desc">Descending</label>
+<a class="text-decoration-none text-success" routerLink="/app/add">
+  <svg style="margin-left:12px; width: 32px; height: 32px;" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus-circle" viewBox="0 0 16 16">
+    <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
+    <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"/>
+  </svg>
+</a>
+<hr class="mt-3 mb-4">
+<div class="container w-100">
+  <div class="row">
+    @for (p of Filterlist(); track p.id) {
+      <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2 mb-3">
+        <div class="card bg-prima ry shadow-sm" [appDark]="ActiveDark()">
+          <img src={{p.thumbnail}} class="card-img-top" appZoom alt="...">
+          <div class="card-body">
+            <h5 class="card-title" [ngClass]="{'text-white':ActiveDark()===true}">{{p.title}}</h5>
+            <p class="card-text" [ngClass]="{'text-white':ActiveDark()===true}">{{extend[$index] ? p.description : (p.description | slice:0:60)}}<span class="text-primary" (click)="seeMore($index)" style="cursor: pointer">{{extend[$index] ? 'See less.' : '...See more.'}}</span></p>
+            <a *ngIf="isAdmin()" [routerLink]="['/app/add', p.id!]">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-square" viewBox="0 0 16 16">
+                <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"/>
+                <path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5z"/>
+              </svg>
+            </a>
+            <p class="card-text fs-6" [ngClass]="{'text-warning':ActiveDark()===true}">{{p.price}}$</p>
+            <p class="card-text fs-5" [ngClass]="{'text-danger':p.stock===0, 'text-warning':p.stock===1, 'text-primary':p.stock>1}">{{p.stock===0 ? "Out of" : p.stock===1 ? "Last one in" : `${p.stock} in`}} stock</p>
+            <button class="btn btn-secondary fs-5" [disabled]="p.stock===0" (click)="reduceWantedAmount($index)">-</button>
+            <input type="number" class="form-control d-inline w-50 text-center mb-2" min="1" [max]="p.stock" [disabled]="p.stock===0" [value]="wantedAmount[$index]">
+            <button class="btn btn-secondary fs-5" [disabled]="p.stock===0" (click)="addWantedAmount($index)">+</button>
+            <button class="btn btn-success w-100" (click)="Total(wantedAmount[$index],p.price,$index)">Add to Cart</button>
+            <button class="btn btn-info w-50" [routerLink]="['/app/products',p.id!]">Details </button>
+            <button *ngIf="isAdmin()" class="btn btn-danger w-50" (click)="deletePro(p.id!)">Delete</button>
+          </div>
+        </div>
+      </div>
+    }
+  </div>
+  <div class="row alert alert-info fs-4">
+    Total price: {{totalPrice}}$
+  </div>
+</div>
+<div class="dark">
+  <app-child></app-child>
+</div>
