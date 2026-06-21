@@ -1,5 +1,8 @@
 <div class="container py-4">
-  <h1 class="h3 fw-bold mb-4">Admin Dashboard</h1>
+  <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
+    <h1 class="h3 fw-bold mb-0">Admin Dashboard</h1>
+    <a class="btn btn-primary" routerLink="/app/add">Add Product</a>
+  </div>
   <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
   <div class="row g-3 mb-4">
     <div class="col-md-6"><div class="card border-0 shadow-sm"><div class="card-body"><p class="text-secondary mb-1">Users</p><strong class="fs-2">{{ users.length }}</strong></div></div></div>
@@ -12,7 +15,7 @@
       <div class="table-responsive"><table class="table align-middle"><thead><tr><th>User</th><th>Role</th><th>Address</th><th></th></tr></thead><tbody><tr *ngFor="let user of users"><td>{{ user.username }}</td><td><span class="badge text-bg-primary">{{ user.role }}</span></td><td>{{ user.address?.city }} {{ user.address?.street }}</td><td class="text-end"><button class="btn btn-outline-danger btn-sm" type="button" (click)="deleteUser(user._id)">Delete</button></td></tr></tbody></table></div>
     </div>
     <div class="tab-pane fade" id="productsTab">
-      <div class="table-responsive"><table class="table align-middle"><thead><tr><th>Product</th><th>Category</th><th>Price</th><th></th></tr></thead><tbody><tr *ngFor="let product of products"><td>{{ product.title }}</td><td>{{ product.category }}</td><td>{{ product.price | currency:'USD':'symbol':'1.2-2' }}</td><td class="text-end"><button class="btn btn-outline-danger btn-sm" type="button" (click)="deleteProduct(product.id)">Delete</button></td></tr></tbody></table></div>
+      <div class="table-responsive"><table class="table align-middle"><thead><tr><th>Product</th><th>Category</th><th>Price</th><th class="text-end">Actions</th></tr></thead><tbody><tr *ngFor="let product of products"><td>{{ product.title }}</td><td>{{ product.category }}</td><td>{{ product.price | currency:'USD':'symbol':'1.2-2' }}</td><td class="text-end"><a class="btn btn-outline-primary btn-sm me-2" [routerLink]="['/app/add', product.id]">Edit</a><button class="btn btn-outline-danger btn-sm" type="button" (click)="deleteProduct(product.id)">Delete</button></td></tr></tbody></table></div>
     </div>
   </div>
 </div>

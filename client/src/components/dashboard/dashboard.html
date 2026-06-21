@@ -1,10 +1,12 @@
 <div class="container-fluid py-4">
   <div class="row g-4">
-    
     <main class="col-lg-9 col-xl-10">
       <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
-        <div><h1 class="h3 fw-bold mb-1">Dashboard</h1><p class="text-secondary mb-0">Manage products and orders.</p></div>
-      
+        <div>
+          <h1 class="h3 fw-bold mb-1">Dashboard</h1>
+          <p class="text-secondary mb-0">Manage products and orders.</p>
+        </div>
+        <a class="btn btn-primary" routerLink="/app/add">Add Product</a>
       </div>
       <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
       <div id="stats" class="row g-3 mb-4">

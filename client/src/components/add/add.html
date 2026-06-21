@@ -7,10 +7,10 @@
     <label for="id" class="form-label">Product ID</label>
     <input type="number" class="form-control" id="id" placeholder="Leave blank for auto id" [(ngModel)]="newPro.id" name="id" [readonly]="!!id" min="1">
     <label for="title" class="form-label">Product Title</label>
-    <input type="text" class="form-control" id="title" placeholder="Enter product title" [(ngModel)]="newPro.title" name="title" required pattern="^[a-zA-Z ]+$" #inpName="ngModel">
+    <input type="text" class="form-control" id="title" placeholder="Enter product title" [(ngModel)]="newPro.title" name="title" required minlength="2" #inpName="ngModel">
     <div [hidden]="inpName.valid || inpName.untouched">
       <p class="alert alert-danger" [hidden]="!inpName?.errors?.['required']">Product NAME is required</p>
-      <p class="alert alert-danger" [hidden]="!inpName?.errors?.['pattern']">Product NAME should be letter only, you enterd {{newPro.title}}</p>
+      <p class="alert alert-danger" [hidden]="!inpName?.errors?.['minlength']">Product NAME must be at least 2 characters</p>
     </div>
     <label for="stock" class="form-label">Product in stock</label>
     <input type="number" class="form-control" id="stock" placeholder="Enter product stock" [(ngModel)]="newPro.stock" name="stock" required min="0">
