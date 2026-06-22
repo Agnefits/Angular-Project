@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, computed, OnInit, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { CartData, CartService, PaymentMethod } from '../../services/cart.service';
 
@@ -11,12 +11,18 @@ import { CartData, CartService, PaymentMethod } from '../../services/cart.servic
   styleUrl: './cart.css',
 })
 export class Cart implements OnInit {
-  cart: CartData | null = null;
-  loading = false;
-  processingPayment = false;
-  error = '';
-  success = '';
-  paymentMethod: PaymentMethod = 'cash_on_delivery';
+  cart = signal<CartData | null>(null);
+  loading = signal(false);
+  processingPayment = signal(false);
+  error = signal('');
+  success = signal('');
+  paymentMethod = signal<PaymentMethod>('cash_on_delivery');
+
+  items = computed(() => (this.cart()?.products || []).filter((item) => !!item.productId));
+  
+  totalPrice = computed(() => this.items().reduce((total, item) => total + (item.productId?.price || 0) * item.quantity, 0));
+
+  submitDisabled = computed(() => this.loading() || this.processingPayment() || !this.items().length);
 
   constructor(private cartService: CartService) {}
 
@@ -24,45 +30,49 @@ export class Cart implements OnInit {
     this.loadCart();
   }
 
-  get items() { return (this.cart?.products || []).filter((item) => !!item.productId); }
-
-  get totalPrice() { return this.items.reduce((total, item) => total + (item.productId?.price || 0) * item.quantity, 0); }
-
-  get submitDisabled() { return this.loading || this.processingPayment || !this.items.length; }
-
   loadCart() {
-    this.loading = true;
-    this.error = '';
+    this.loading.set(true);
+    this.error.set('');
     this.cartService.getCart().subscribe({
-      next: (response) => { this.cart = response.data; this.loading = false; },
-      error: (err) => { this.cart = null; this.loading = false; if (err?.status !== 404) this.error = err?.error?.message || 'Failed to load cart'; },
+      next: (response) => {
+        this.cart.set(response.data);
+        this.loading.set(false);
+      },
+      error: (err) => {
+        this.cart.set(null);
+        this.loading.set(false);
+        if (err?.status !== 404) {
+          this.error.set(err?.error?.message || 'Failed to load cart');
+        }
+      },
     });
   }
 
   remove(productId?: string) {
-    if (!productId || this.processingPayment) return;
+    if (!productId || this.processingPayment()) return;
     this.cartService.removeFromCart(productId).subscribe({
-      next: (response) => this.cart = response.data || null,
-      error: (err) => this.error = err?.error?.message || 'Failed to remove item',
+      next: (response) => this.cart.set(response.data || null),
+      error: (err) => this.error.set(err?.error?.message || 'Failed to remove item'),
     });
   }
 
   checkout() {
-    if (this.submitDisabled) return;
-    this.success = '';
-    this.error = '';
-    this.processingPayment = true;
+    if (this.submitDisabled()) return;
+    this.success.set('');
+    this.error.set('');
+    this.processingPayment.set(true);
 
-    this.cartService.checkout(this.paymentMethod).subscribe({
+    this.cartService.checkout(this.paymentMethod()).subscribe({
       next: (response) => {
-        this.processingPayment = false;
-        this.success = response.message;
-        this.cart = null;
+        this.processingPayment.set(false);
+        this.success.set(response.message);
+        this.cart.set(null);
       },
       error: (err) => {
-        this.processingPayment = false;
-        this.error = err?.error?.message || 'Failed to place order';
+        this.processingPayment.set(false);
+        this.error.set(err?.error?.message || 'Failed to place order');
       },
     });
   }
 }
+
